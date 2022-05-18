@@ -1,0 +1,7 @@
+xtext/
+vendor/
+.vscode
+__debug_bin.exe
+*.out
+_test
+env
