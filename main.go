@@ -41,10 +41,7 @@ func main() {
 	}
 
 	// CONNECT TO MONGO DATABASE
-<<<<<<< HEAD
 	database.MAIN_DATABASE = "gotrade"
-=======
->>>>>>> 8741c6eef365f98c82d2c943b62f4c10524a081f
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	var err error
 	database.Client, err = mongo.Connect(ctx, options.Client().ApplyURI(MONGO))
