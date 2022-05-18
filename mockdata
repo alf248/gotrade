@@ -1,0 +1,10 @@
+{
+    "addData": false,
+    "//addData": "if false, no mock data will be added at all",
+
+    "userNames": ["joe", "dan", "tom", "tim", "bob", "mia", "zoe", "lea"],
+    "//userNames": "names of users to be added",
+
+    "randomOffers": 20,
+    "//randomOffers": "the amount of offers to add"
+}
