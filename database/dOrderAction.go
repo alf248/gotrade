@@ -3,23 +3,29 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func DeleteVector(orderId string, username string) (httpStatus int, e error) {
+func DeleteOrder(orderId string, receiverFID string) (httpStatus int, e error) {
 
 	objectId, err := primitive.ObjectIDFromHex(orderId)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 
-	coll := Client.Database(MAIN_DATABASE).Collection(VECTORS_COLLECTION)
+	fmt.Println("DELETE got id", orderId)
+	fmt.Printf("DELETE oid %+v", objectId)
+
+	println("receiver: ", receiverFID)
+
+	coll := Client.Database(MAIN_DATABASE).Collection(ORDERS_COLLECTION)
 
 	_ = objectId
-	filter := bson.D{{"_id", objectId}, {"head", username}}
+	filter := bson.D{{"_id", objectId}, {ORDER_RECEIVER_FID, receiverFID}}
 
 	r, err := coll.DeleteOne(context.TODO(), filter)
 	if err != nil {

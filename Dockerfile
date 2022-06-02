@@ -27,6 +27,7 @@ RUN apk add --no-cache ca-certificates
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /app/serve /serve
+COPY ServiceAccountKey.json /
 #COPY index.html ./index.html
 #COPY assets/ ./assets/
 

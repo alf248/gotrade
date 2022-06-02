@@ -23,17 +23,19 @@ func addSomeMockOffers() error {
 	form2 := createRandomOffer(rand)
 
 	form1.Name = "Lucky Car"
-	form1.Giver = "joe"
+	form1.CreatorFID = mockUsers[0].FID
+	form1.CreatorName = mockUsers[0].Name
 	form1.Price = 1000
-	form1.Cat = "car"
-	form1.Description = "This car brings luck to the rider. Good for poker players."
+	form1.Category = "car"
+	form1.Description = loremIpsumShort
 	form1.Image = "car1"
 
 	form2.Name = "Fast Car"
-	form2.Giver = "mia"
+	form2.CreatorFID = mockUsers[1].FID
+	form2.CreatorName = mockUsers[1].Name
 	form2.Price = 10000
-	form2.Cat = "car"
-	form2.Description = "This car goes twice as fast as the speed limit. Bring some cash to pay the cops."
+	form2.Category = "car"
+	form2.Description = loremIpsumShort
 	form2.Image = "car2"
 
 	var forms = []any{form1, form2}
@@ -78,17 +80,25 @@ func createRandomOffer(r *rand.Rand) forms.Offer {
 	var priceStr = strconv.FormatFloat(p, 'f', 2, 64)
 	var price, _ = strconv.ParseFloat(priceStr, 64)
 
+	userN := r.Intn(100)
+	userNN := 0
+	if userN > 70 {
+		userNN = 1
+	}
+
 	form := forms.Offer{
 		Name:        title,
 		Description: loremIpsumLong,
-		Giver:       UserNames[r.Intn(len(UserNames))],
+		//Giver:       UserNames[r.Intn(len(UserNames))],
+		CreatorFID:  mockUsers[userNN].FID,
+		CreatorName: mockUsers[userNN].Name,
 		Price:       price,
 		Currency:    "Euro",
 		Sale:        true,
 		Image:       strings.ToLower(cat) + fmt.Sprint(1+rand.Intn(2)),
 		Likes:       r.Intn(100),
 		Dislikes:    r.Intn(10),
-		Cat:         strings.ToLower(cat),
+		Category:    strings.ToLower(cat),
 	}
 
 	return form

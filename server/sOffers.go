@@ -14,7 +14,7 @@ import (
 
 func newOffer(c echo.Context) error {
 
-	user, authStatus, err := authenticate(c)
+	user, authStatus, err := authenticate_through_firebase(c)
 	if err != nil {
 		return c.JSON(authStatus, err.Error())
 	}
@@ -28,12 +28,14 @@ func newOffer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	err = form.Curate(user)
+	err = form.Curate()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	newId, err := database.NewOffer(user, form)
+	offer, _ := form.CreateOffer(user)
+
+	newId, err := database.NewOffer(user, offer)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -85,7 +87,7 @@ func getOffers(c echo.Context) error {
 
 func editOffer(c echo.Context) error {
 
-	user, authStatus, err := authenticate(c)
+	user, authStatus, err := authenticate_through_firebase(c)
 	if err != nil {
 		return c.JSON(authStatus, err.Error())
 	}

@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func NewOffer(user *forms.User, form *forms.NewOfferForm) (string, error) {
+func NewOffer(user *forms.User, form forms.Offer) (string, error) {
 
 	coll := Client.Database(MAIN_DATABASE).Collection(OFFERS_COLLECTION)
 
@@ -87,7 +87,7 @@ func EditOffer(id primitive.ObjectID, user *forms.User, newForm *forms.NewOfferF
 	}
 
 	// Make sure the user is giver or receiver
-	if !(offer.Giver == user.Name || offer.Receiver == user.Name) {
+	if !(offer.CreatorFID == user.FID || offer.AcceptorFID == user.FID) {
 		return http.StatusForbidden, errors.New("user is not in offer")
 	}
 

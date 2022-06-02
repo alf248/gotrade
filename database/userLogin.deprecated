@@ -12,13 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func Login(email string, password string) (*forms.User, error) {
+func Login(email string, password string) (*forms.UserPrivate, error) {
 
 	token := GenerateSessionToken(20)
 
 	coll := Client.Database(USER_DATABASE).Collection(USERS_COLLECTION)
 
-	var user forms.User
+	var user forms.UserPrivate
 	err := coll.FindOne(context.TODO(), bson.D{{"email", email}}).Decode(&user)
 	if err == mongo.ErrNoDocuments {
 		return nil, err
@@ -48,11 +48,11 @@ func Login(email string, password string) (*forms.User, error) {
 	return &user, nil
 }
 
-func CheckUser(email string, token string) (*forms.User, int, error) {
+func CheckUser(email string, token string) (*forms.UserPrivate, int, error) {
 
 	coll := Client.Database(USER_DATABASE).Collection(USERS_COLLECTION)
 
-	var user forms.User
+	var user forms.UserPrivate
 
 	err := coll.FindOne(context.TODO(), bson.D{{"email", email}, {"token", token}}).Decode(&user)
 

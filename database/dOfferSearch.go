@@ -39,6 +39,8 @@ func SearchOffers(form *forms.SearchOffers) ([]forms.Offer, int, error) {
 
 	pipeline = append(pipeline, matchStage, sortStage, skipStage, limitStage)
 
+	//fmt.Printf("PIPELINE +%v", pipeline)
+
 	cursor, err := coll.Aggregate(context.TODO(), pipeline)
 	if err != nil {
 		log.Println("database error:", err.Error())
@@ -74,25 +76,42 @@ func getSearchStage(form *forms.SearchOffers) primitive.D {
 
 func getMatchStage(form *forms.SearchOffers) primitive.D {
 
+	var match bson.D
+
+	match = bson.D{{"sale", form.Sale}}
+
+	if form.ByFID != "" {
+		match = append(match, bson.E{OFFER_CREATOR_FID, form.ByFID})
+	}
+
+	if form.Category != "" {
+		match = append(match, bson.E{"cat", form.Category})
+	}
+
+	return bson.D{{"$match", match}}
+}
+
+func getMatchStageOLD(form *forms.SearchOffers) primitive.D {
+
 	var matchStage bson.D
 	var match bson.D
 
 	if form.Sale {
-		if form.By == "" {
-			match = bson.D{{GIVER, bson.D{bson.E{"$exists", true}, bson.E{"$ne", ""}}}}
+		if form.ByFID == "" {
+			match = bson.D{{OFFER_CREATOR_FID, bson.D{bson.E{"$exists", true}, bson.E{"$ne", ""}}}}
 		} else {
-			match = bson.D{{GIVER, form.By}}
+			match = bson.D{{OFFER_CREATOR_FID, form.ByFID}}
 		}
 	} else {
-		if form.By == "" {
-			match = bson.D{{RECEIVER, bson.D{bson.E{"$exists", true}, bson.E{"$ne", ""}}}}
+		if form.ByFID == "" {
+			match = bson.D{{OFFER_CREATOR_FID, bson.D{bson.E{"$exists", true}, bson.E{"$ne", ""}}}}
 		} else {
-			match = bson.D{{RECEIVER, form.By}}
+			match = bson.D{{OFFER_CREATOR_FID, form.ByFID}}
 		}
 	}
 
-	if form.Cat != "" {
-		match = append(match, bson.E{"cat", form.Cat})
+	if form.Category != "" {
+		match = append(match, bson.E{"cat", form.Category})
 	}
 
 	matchStage = bson.D{{"$match", match}}

@@ -14,15 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func NewUser(user forms.UserInOut) (string, error) {
+func NewUser(user forms.NewUser) (id string, e error) {
 
 	coll := Client.Database(USER_DATABASE).Collection(USERS_COLLECTION)
-
-	hash, err := HashPassword(user.Password)
-	if err != nil {
-		return "", err
-	}
-	user.Password = hash
 
 	result, err := coll.InsertOne(context.TODO(), user)
 	if err != nil {
@@ -32,13 +26,13 @@ func NewUser(user forms.UserInOut) (string, error) {
 	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
-func GetUser(name string) (*forms.UserInOut, int, error) {
+func GetUserByFirebaseId(fid string) (*forms.User, int, error) {
 
-	var user forms.UserInOut
+	var user forms.User
 
 	coll := Client.Database(USER_DATABASE).Collection(USERS_COLLECTION)
 
-	err := coll.FindOne(context.TODO(), bson.D{{"name", name}}).Decode(&user)
+	err := coll.FindOne(context.TODO(), bson.D{{"fid", fid}}).Decode(&user)
 	if err == mongo.ErrNoDocuments {
 		return nil, http.StatusNotFound, errors.New("Not Found")
 	}

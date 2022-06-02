@@ -11,7 +11,7 @@ import (
 
 func offerAction(c echo.Context) error {
 
-	user, authStatus, err := authenticate(c)
+	user, authStatus, err := authenticate_through_firebase(c)
 	if err != nil {
 		return c.JSON(authStatus, err.Error())
 	}

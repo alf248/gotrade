@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
 
 	"github.com/alf248/gotrade/database"
-	"github.com/alf248/gotrade/database/mock"
 	m "github.com/alf248/gotrade/database/mock"
 	"github.com/alf248/gotrade/server"
 
@@ -19,6 +19,8 @@ import (
 )
 
 func main() {
+
+	var err error
 
 	// PORT is the port that this http server will use.
 	// FRONTEND is the URL to the frontend app. Needed for CORS to function.
@@ -36,14 +38,19 @@ func main() {
 			database.UseAtlasSearch = true
 		}
 	} else {
-		PORT, FRONTEND, MONGO = getEnvironmentVariables()
-		database.UseAtlasSearch = true
+		PORT, FRONTEND, MONGO, err = getEnvironmentVariables()
+		if err != nil {
+			PORT = "1323"
+			FRONTEND = "http://localhost:3000"
+			MONGO = "mongodb://localhost:27017"
+		} else {
+			database.UseAtlasSearch = true
+		}
 	}
 
 	// CONNECT TO MONGO DATABASE
 	database.MAIN_DATABASE = "gotrade"
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	var err error
 	database.Client, err = mongo.Connect(ctx, options.Client().ApplyURI(MONGO))
 	if err != nil {
 		panic(err)
@@ -55,34 +62,33 @@ func main() {
 	if mockData != nil {
 		if mockData.AddData {
 			log.Println("ADDING MOCK DATA")
-			mock.UserNames = mockData.UserNames
 			m.AddMockUsers()
 			m.AddMockOffers(mockData.RandomOffers)
 		}
 	}
 
 	// START HTTP SERVER
-	server.Start(PORT, FRONTEND)
+	server.StartStandardServer(PORT, FRONTEND)
 }
 
-func getEnvironmentVariables() (string, string, string) {
+func getEnvironmentVariables() (string, string, string, error) {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatal("$PORT must be set")
+		return "", "", "", errors.New("$PORT must be set")
 	}
 
 	frontEnd := os.Getenv("FRONTEND")
 	if frontEnd == "" {
-		log.Fatal("$FRONTEND must be set")
+		return "", "", "", errors.New("$FRONTEND must be set")
 	}
 
 	mongoURL := os.Getenv("MONGO")
 	if mongoURL == "" {
-		log.Fatal("$MONGO must be set")
+		return "", "", "", errors.New("$MONGO must be set")
 	}
 
-	return port, frontEnd, mongoURL
+	return port, frontEnd, mongoURL, nil
 }
 
 type envData struct {
@@ -102,9 +108,7 @@ func getEnvDataFromFile(filename string) *envData {
 		}
 
 		log.Println("Found env file:")
-		//log.Println("PORT", devMode.PORT)
-		log.Println("MONGO", data.MONGO)
-		//log.Println("FRONTEND", devMode.FRONTEND)
+		log.Println("PORT", data.PORT)
 		log.Println("UseAtlasSearch", data.UseAtlasSearch)
 
 		return &data

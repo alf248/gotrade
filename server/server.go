@@ -1,28 +1,47 @@
 package server
 
 import (
+	"context"
+	"io/ioutil"
+	"log"
 	"net/http"
 
+	"google.golang.org/api/option"
+
+	firebase "firebase.google.com/go/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Start(port string, corsOrigin string) {
+var path_to_service_account_key = "ServiceAccountKey.json"
+
+const firebaseProjectId = "trade-51694"
+
+func StartStandardServer(port string, corsOrigin string) {
+
+	_, err := ioutil.ReadFile(path_to_service_account_key)
+	if err != nil {
+		path_to_service_account_key = "../" + path_to_service_account_key
+		_, err = ioutil.ReadFile(path_to_service_account_key)
+		if err != nil {
+			log.Fatalf("error reading service account key")
+		}
+	}
+
+	opt := option.WithCredentialsFile(path_to_service_account_key)
+	config := &firebase.Config{ProjectID: firebaseProjectId}
+	fireapp, err = firebase.NewApp(context.Background(), config, opt)
+	if err != nil {
+		log.Fatalf("error initializing app: %v\n", err)
+	}
 
 	e := echo.New()
 
 	// Limit size of requests
 	// https://echo.labstack.com/middleware/body-limit/
-	// "The body limit is determined based on both Content-Length request header and actual content read, which makes it super secure." -echo docs
 	// Limit can be specified as 4x or 4xB, where x is one of the multiple from K, M, G, T or P.
 	e.Use(middleware.BodyLimit("1M"))
 
-	// Limit rate of requests
-	// https://echo.labstack.com/middleware/rate-limiter/
-	// "By default an in-memory store is used for keeping track of requests" -echo docs
-	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
-
-	// https://echo.labstack.com/middleware/cors/
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{corsOrigin},
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete, http.MethodOptions},
@@ -30,31 +49,20 @@ func Start(port string, corsOrigin string) {
 		AllowCredentials: true,
 	}))
 
-	// Just a path to test that the server is running from a browser
-	e.GET("/", func(c echo.Context) error { return c.String(http.StatusOK, "OK") })
-
-	// USERS
-	e.POST("/users/:name", getUser)
-	e.POST("/users/:name/edit", editUser)
-
-	// LOGIN
-	e.POST("/login", func(c echo.Context) error { return login(c) })
-	e.POST("/logout", func(c echo.Context) error { return logout(c) })
+	e.GET("/", func(c echo.Context) error { return c.String(http.StatusOK, "gotrade server is running") })
 
 	// OFFERS
-	e.POST("/offers/new", func(c echo.Context) error { return newOffer(c) })
-	e.POST("/offers", func(c echo.Context) error { return getOffers(c) })
-	e.POST("/offers/:id", func(c echo.Context) error { return getOffer(c) })
-	e.POST("/offers/:id/edit", func(c echo.Context) error { return editOffer(c) })
-	e.POST("/offers/:id/action", func(c echo.Context) error { return offerAction(c) })
+	e.POST("/offers/new", newOffer)
+	e.POST("/offers", getOffers)
+	e.POST("/offers/:id", getOffer)
+	e.POST("/offers/:id/edit", editOffer)
+	e.POST("/offers/:id/action", offerAction)
 
 	// ORDERS
-	e.POST("/orders/new", newVectors)
-	e.POST("/orders", getVectors)
-	e.POST("/orders/:id/action", vectorAction)
+	e.POST("/orders/new", newOrders)
+	e.POST("/orders", getOrders)
+	e.POST("/orders/:id/action", orderAction)
 
 	// Start the server
-	// this "fatal" logger will crash this program if the server fails somehow
 	e.Logger.Fatal(e.Start(":" + port))
-
 }

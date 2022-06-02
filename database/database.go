@@ -18,14 +18,17 @@ var USER_DATABASE = MAIN_DATABASE
 const TEST_DATABASE = "gotradetest"
 
 const OFFERS_COLLECTION = "offers"
-const VECTORS_COLLECTION = "vectors"
+const ORDERS_COLLECTION = "orders"
 const USERS_COLLECTION = "users"
 
 const MAX_OFFERS_PER_USER = 100
 const MAX_VECTORS_PER_USER = 100
 
-const GIVER = "giver"
-const RECEIVER = "receiver"
+const ORDER_GIVER_FID = "giverFID"
+const ORDER_RECEIVER_FID = "receiverFID"
+
+const OFFER_CREATOR_FID = "creatorFID"
+const OFFER_ACCEPTOR_FID = "acceptorFID"
 
 const SEARCH_OFFERS_MAX_PAGE_SIZE = 10
 

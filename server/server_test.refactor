@@ -1,5 +1,9 @@
 package server
 
+/*
+Refactor this to make it work with Firebase
+*/
+
 import (
 	"context"
 	"encoding/json"
@@ -60,7 +64,7 @@ func TestLogin(t *testing.T) {
 
 		// Get and set users session token
 		body := rec.Body.String()
-		var userForm forms.User
+		var userForm forms.UserPrivate
 		if err := json.Unmarshal([]byte(body), &userForm); err != nil {
 			panic(err)
 		}
